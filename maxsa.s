@@ -1,11 +1,11 @@
 # .pos 0x100
 # main:
 #     irmovq $stackEnd, %rsp
-#     irmovq $array, %rdi
-#     irmovq $arraySize, %rsi
-#     mrmovq (%rsi), %rsi
-#     irmovq $resultStart, %rdx
-#     irmovq $resultEnd, %rcx
+#     irmovq $array, %rdi           # rdi = address of array i.e. &array[0]
+#     irmovq $arraySize, %rsi       # rsi = address arraySize
+#     mrmovq (%rsi), %rsi           # rsi = arraySize
+#     irmovq $resultStart, %rdx     # rdx = address of sa_start
+#     irmovq $resultEnd, %rcx       # rcx = address of sa_end
 #     call   maxSubArray
 #     irmovq $resultSum, %r8
 #     rmmovq %rax, (%r8)
@@ -13,30 +13,30 @@
 
 # .pos 0x1000
 maxSubArray:
-    pushq  %rbx
-    pushq  %rbp
-    pushq  %r12
-    pushq  %r13
-    pushq  %r14
-    irmovq $1, %r9
-    subq   %rsi, %r9
-    jne    L1
-    rmmovq %rdi, (%rcx)
-    rmmovq %rdi, (%rdx)
-    mrmovq (%rdi), %r13
-    jmp    L9
+#    pushq  %rbx
+#    pushq  %rbp
+#    pushq  %r12
+#    pushq  %r13
+#    pushq  %r14
+    irmovq $1, %r9          # r9 = 1
+    subq   %rsi, %r9        # if (size != 1), jump to L1
+    jne    L1               #
+    rmmovq %rdi, (%rcx)     # *sa_end = array;
+    rmmovq %rdi, (%rdx)     # *sa_start = array;
+    mrmovq (%rdi), %r13     # r13 = value of first element
+    jmp    L9               # goto L9
 L1:
-    irmovq $2, %r10
-    rrmovq %rsi, %rbx
-    divq   %r10, %rbx
-    irmovq $8, %rbp
-    mulq   %rbx, %rbp
-    addq   %rdi, %rbp
+    irmovq $2, %r10         # r10 = 2
+    rrmovq %rsi, %rbx       # rbx = arraySize
+    divq   %r10, %rbx       # rbx = half = arraySize // 2
+    irmovq $8, %rbp         # rbp = step, element size
+    mulq   %rbx, %rbp       # offset
+    rrmovq %rsi, %r9        # r9 = arraySize
+    addq   %rdi, %rbp       # *mid = array + half
     irmovq $8, %r8
-    rrmovq %rsi, %r9
-    mulq   %r8, %r9
+    mulq   %r8, %r9         # r9 = arraySize +
     addq   %rdi, %r9
-    subq   %r8, %r9
+    subq   %r8, %r9         # *end = array + size - 1
     xorq   %rax, %rax
     irmovq $0x8000000000000000, %r10
     rrmovq %rbp, %r11
@@ -111,13 +111,13 @@ L8:
     rmmovq %rdx, (%r12)
     rmmovq %rcx, (%r14)
 L9:
-    rrmovq %r13, %rax
-    popq   %r14
-    popq   %r13
-    popq   %r12
-    popq   %rbp
-    popq   %rbx
-    ret
+    rrmovq %r13, %rax       # rax = r13
+#    popq   %r14
+#    popq   %r13
+#    popq   %r12
+#    popq   %rbp
+#    popq   %rbx
+    ret                     # return
 
 
 # .pos 0x2000
