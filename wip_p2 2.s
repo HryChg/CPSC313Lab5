@@ -1,15 +1,15 @@
-.pos 0x100
-main:
-    irmovq $stackEnd, %rsp
-    irmovq $array, %rdi           # rdi = address of array i.e. &array[0]
-    irmovq $arraySize, %rsi       # rsi = address arraySize
-    mrmovq (%rsi), %rsi           # rsi = arraySize
-    irmovq $resultStart, %rdx     # rdx = address of sa_start
-    irmovq $resultEnd, %rcx       # rcx = address of sa_end
-    call   maxSubArray
-    irmovq $resultSum, %r8
-    rmmovq %rax, (%r8)
-    halt
+# .pos 0x100
+# main:
+#     irmovq $stackEnd, %rsp
+#     irmovq $array, %rdi           # rdi = address of array i.e. &array[0]
+#     irmovq $arraySize, %rsi       # rsi = address arraySize
+#     mrmovq (%rsi), %rsi           # rsi = arraySize
+#     irmovq $resultStart, %rdx     # rdx = address of sa_start
+#     irmovq $resultEnd, %rcx       # rcx = address of sa_end
+#     call   maxSubArray
+#     irmovq $resultSum, %r8
+#     rmmovq %rax, (%r8)
+#     halt
 
 # .pos 0x1000
 maxSubArray:

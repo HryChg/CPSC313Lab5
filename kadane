@@ -1,0 +1,174 @@
+// def max_subarray(numbers):
+//     """Find the largest sum of any contiguous subarray."""
+//     best_sum = 0  # or: float('-inf')
+//     current_sum = 0
+//     for x in numbers:
+//         current_sum = max(0, current_sum + x)
+//         best_sum = max(best_sum, current_sum)
+//     return best_sum
+
+
+
+/*
+
+### Caller Saved Registers
+
+**Caller saved registers** are scratch registers.
+The **callee** (next function) is **allowed** to scribble (**override**) all over them.
+So **if** the **callers** **cares** about the **content** in these registers, the callers **must** **save** them **onto** the **stack**.
+
+[IMPORTANT⚠️]  Caller saved registers in includes
+
+- the **argument registers**: `%rdi, %rsi, %rdx, %rcx, %r8, %r9`
+- the **return register**: `%rax`
+- `%r10, %r11`
+
+### Callee Saved Registers
+
+**Callee saved registers** are registers that <u>**callee** **must** **restore** before returning</u>.
+If the callee uses them, then the callee <u>must restore the original values before returning</u>.
+
+[IMPORTANT⚠️]  Callee saved registers includes: `%rbx, %rbp, %r12, %r13, %r14`
+*/
+
+
+#include <limits.h>
+long maxsa(long *array, long size, long **sa_start, long **sa_end) { // TODO Remove Excess Params
+  long best_sum = 0;
+  long current_sum = 0;
+  long *ptr;
+  long *end = array + size - 1;
+
+  for (ptr = array; ptr < end; ptr++) {
+    long x = *ptr;
+    if (0 > current_sum + x) {
+        current_sum = 0;
+    } else {
+        current_sum = current_sum + x;
+    }
+    if (best_sum < current_sum) {
+        best_sum = current_sum;
+    }
+  }
+  return best_sum;
+}
+
+
+
+# --
+Current Status:
+
+rdi = adress of array
+rsi = array size
+
+r8 = ptr
+r9 = placeholder
+r10 = best_sum
+r11 = current_sum
+
+rdx = end
+rax = result
+rcx = ???
+rbp = 8,
+# --
+
+
+
+
+
+
+
+
+
+.pos 0x100
+main:
+    irmovq $stackEnd, %rsp
+    irmovq $array, %rdi           # rdi = address of array i.e. &array[0]
+    irmovq $arraySize, %rsi       # rsi = address arraySize
+    mrmovq (%rsi), %rsi           # rsi = arraySize
+    irmovq $resultStart, %rdx     # rdx = address of sa_start
+    irmovq $resultEnd, %rcx       # rcx = address of sa_end
+    call   maxSubArray
+    irmovq $resultSum, %r8
+    rmmovq %rax, (%r8)
+    halt
+
+# .pos 0x1000
+maxSubArray:
+    irmovq $0, %r10          # best_sum = 0
+    irmovq $0, %r11          # current_sum = 0
+
+    rrmovq %rsi, %rbx        # rbx = array size
+    irmovq $8, %rbp          # rbp = 8
+    mulq   %rbp, %rbx        # rbx = offset
+    rrmovq %rdi, %rdx        # rbx = array
+    addq   %rbx, %rdx        # end = array + offset
+    subq   %rbp, %rdx        # end = array + offset - 1
+
+    # Init Ptr
+    rrmovq %rdi, %r8         # r8 = ptr = &array[0]
+
+L1: # for (ptr = array; ptr <= end; ptr++) {...}
+
+    # TODO ptr < end
+    rrmovq %rdx, %r9        # r9 = end
+    subq   %r8, %r9         # r9 = end - ptr
+    jl     L5               # if end < ptr, exit the loop
+    mrmovq (%r8), %r9       # x = *ptr
+
+    addq %r11, %r9          # r9 = current_sum + x
+    rrmovq %r9, %r12        # r12 = current_sum + x
+    irmovq $0, %rcx         # rcx = 0
+    subq %rcx, %r12         # r12 = 0 - (current_sum + x)
+    jle     L2              # if 0 <= (current_sum + x), goto L3
+    rrmovq %rcx, %r11       # current_sum = 0
+    jmp       L3
+L2:
+    rrmovq %r9, %r11        # current_sum = current_sum + x
+L3:
+    rrmovq %r10, %r9        # r9 = best_sum
+    subq   %r11, %r9        # r9 = best_sum - current_sum
+    jg L4
+    rrmovq %r11, %r10       # best_sum = current_sum
+L4: # back to the loop
+    addq %rbp, %r8          # ptr++
+    jmp    L1               # jump to beginning of loop
+
+L5: # exits the loop
+
+    rrmovq %r10, %rax       # return best_sum
+    ret
+
+.pos 0x2000
+array:
+    .quad 13
+    .quad -3
+    .quad -25
+    .quad -20
+    .quad -3
+    .quad -16
+    .quad -23
+    .quad 18
+    .quad 20
+    .quad -7
+    .quad 12
+    .quad -5
+    .quad -22
+    .quad 15
+    .quad -4
+    .quad 7
+arraySize:
+ .quad 16
+
+.pos 0x2500
+resultStart:
+    .quad 0
+resultEnd:
+    .quad 0
+resultSum:
+    .quad 0
+.pos 0x4000
+stack:
+    .quad 0, 1000
+stackEnd:
+    .quad 0

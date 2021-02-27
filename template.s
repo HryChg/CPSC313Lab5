@@ -11,7 +11,7 @@ main:
     rmmovq %rax, (%r8)
     halt
 
-# .pos 0x1000
+.pos 0x1000
 maxSubArray:
     pushq  %r13
     irmovq $1, %r9          # r9 = 1
@@ -120,37 +120,36 @@ L9:
     ret                     # return
 
 
-# .pos 0x2000
-# array:
-#     .quad 13
-#     .quad -3
-#     .quad -25
-#     .quad -20
-#     .quad -3
-#     .quad -16
-#     .quad -23
-#     .quad 18
-#     .quad 20
-#     .quad -7
-#     .quad 12
-#     .quad -5
-#     .quad -22
-#     .quad 15
-#     .quad -4
-#     .quad 7
-# arraySize:
-#     .quad 16
-#
-# .pos 0x2500
-# resultStart:
-#     .quad 0
-# resultEnd:
-#     .quad 0
-# resultSum:
-#     .quad 0
-#
-# .pos 0x4000
-# stack:
-#     .quad 0, 1000
-# stackEnd:
-#     .quad 0
+.pos 0x2000
+array:
+    .quad 13
+    .quad -3
+    .quad -25
+    .quad -20
+    .quad -3
+    .quad -16
+    .quad -23
+    .quad 18
+    .quad 20
+    .quad -7
+    .quad 12
+    .quad -5
+    .quad -22
+    .quad 15
+    .quad -4
+    .quad 7
+arraySize:
+ .quad 16
+
+.pos 0x2500
+resultStart:
+    .quad 0
+resultEnd:
+    .quad 0
+resultSum:
+    .quad 0
+.pos 0x4000
+stack:
+    .quad 0, 1000
+stackEnd:
+    .quad 0
