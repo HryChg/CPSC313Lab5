@@ -32,19 +32,19 @@ L1:
     irmovq $8, %rbp         # rbp = step, element size
     mulq   %rbx, %rbp       # offset
     rrmovq %rsi, %r9        # r9 = arraySize
-    addq   %rdi, %rbp       # *mid = array + half
     irmovq $8, %r8
-    mulq   %r8, %r9         # r9 = arraySize +
-    addq   %rdi, %r9
-    subq   %r8, %r9         # *end = array + size - 1
-    xorq   %rax, %rax
-    irmovq $0x8000000000000000, %r10
-    rrmovq %rbp, %r11
-    subq   %r8, %r11
+    addq   %rdi, %rbp       # *mid = array + half
+    mulq   %r8, %r9         # r9 = offset
+    addq   %rdi, %r9        # array + offset
+    subq   %r8, %r9         # *mid = *mid - 1
+    xorq   %rax, %rax       # rax = 0
+    rrmovq %rbp, %r11       # r11 = ptr
+    subq   %r8, %r11        # r11 =
+    irmovq $0x8000000000000000, %r10    # r10
 L2:
-    rrmovq %r11, %r12
-    subq   %rdi, %r12
-    jl     L4
+    rrmovq %r11, %r12       # r12 = ptr
+    subq   %rdi, %r12       # loop condition: if ptr < array
+    jl     L4               # exit loop
     mrmovq (%r11), %r12
     addq   %r12, %rax
     rrmovq %rax, %r12
