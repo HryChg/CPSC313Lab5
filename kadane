@@ -32,6 +32,36 @@ If the callee uses them, then the callee <u>must restore the original values bef
 */
 
 
+
+
+/*
+
+def max_subarray(numbers):
+    """Find a contiguous subarray with the largest sum."""
+    best_sum = 0  # or: float('-inf')
+    best_start = best_end = 0  # or: None
+    current_sum = 0
+    for current_end, x in enumerate(numbers):
+        if current_sum <= 0:
+            # Start a new sequence at the current element
+            current_start = current_end
+            current_sum = x
+        else:
+            # Extend the existing sequence with the current element
+            current_sum += x
+
+        if current_sum > best_sum:
+            best_sum = current_sum
+            best_start = current_start
+            best_end = current_end + 1  # the +1 is to make 'best_end' exclusive
+
+    return best_sum, best_start, best_end
+
+
+
+*/
+
+
 #include <limits.h>
 long maxsa(long *array, long size, long **sa_start, long **sa_end) { // TODO Remove Excess Params
   long best_sum = 0;
@@ -41,11 +71,11 @@ long maxsa(long *array, long size, long **sa_start, long **sa_end) { // TODO Rem
 
   for (ptr = array; ptr < end; ptr++) {
     long x = *ptr;
-    if (0 > current_sum + x) {
-        current_sum = 0;
-    } else {
-        current_sum = current_sum + x;
-    }
+     if (0 > current_sum) {
+         current_sum = x;
+     } else {
+         current_sum = current_sum + x;
+     }
     if (best_sum < current_sum) {
         best_sum = current_sum;
     }
@@ -95,15 +125,15 @@ main:
 
 # .pos 0x1000
 maxSubArray:
-    irmovq $0, %r10          # best_sum = 0
-    irmovq $0, %r11          # current_sum = 0
 
-    rrmovq %rsi, %rbx        # rbx = array size
-    irmovq $8, %rbp          # rbp = 8
-    mulq   %rbp, %rbx        # rbx = offset
-    rrmovq %rdi, %rdx        # rbx = array
-    addq   %rbx, %rdx        # end = array + offset
-    subq   %rbp, %rdx        # end = array + offset - 1
+    irmovq $0, %r10         # best_sum = 0
+    irmovq $0, %r11         # current_sum = 0
+
+    irmovq $8, %rcx          # rcx = 8
+    mulq   %rcx, %rsi        # rsi = offset
+    rrmovq %rdi, %rdx        # rdx = array
+    addq   %rsi, %rdx        # rdx = array + offset
+    subq   %rcx, %rdx        # end = array + offset - 1
 
     # Init Ptr
     rrmovq %rdi, %r8         # r8 = ptr = &array[0]
@@ -116,14 +146,15 @@ L1: # for (ptr = array; ptr <= end; ptr++) {...}
     jl     L5               # if end < ptr, exit the loop
     mrmovq (%r8), %r9       # x = *ptr
 
-    addq %r11, %r9          # r9 = current_sum + x
-    rrmovq %r9, %r12        # r12 = current_sum + x
     irmovq $0, %rcx         # rcx = 0
-    subq %rcx, %r12         # r12 = 0 - (current_sum + x)
-    jle     L2              # if 0 <= (current_sum + x), goto L3
-    rrmovq %rcx, %r11       # current_sum = 0
+    rrmovq %r11, %rax       # rax = current_sum
+    subq   %rax, %rcx       # if (0 > current_sum)
+    jle    L2
+    rrmovq %r9, %r11        # current_sum = x
     jmp       L3
 L2:
+    addq %r11, %r9          # r9 = current_sum + x
+    rrmovq %r9, %rdi        # r12 = current_sum + x
     rrmovq %r9, %r11        # current_sum = current_sum + x
 L3:
     rrmovq %r10, %r9        # r9 = best_sum
@@ -131,7 +162,8 @@ L3:
     jg L4
     rrmovq %r11, %r10       # best_sum = current_sum
 L4: # back to the loop
-    addq %rbp, %r8          # ptr++
+    irmovq $8, %rcx         # rcx = 8
+    addq %rcx, %r8          # ptr++
     jmp    L1               # jump to beginning of loop
 
 L5: # exits the loop
